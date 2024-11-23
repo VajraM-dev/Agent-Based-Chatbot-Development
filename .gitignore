@@ -1,0 +1,5 @@
+.env
+venv
+helper_codes/
+__pycache__
+testing.py
