@@ -104,19 +104,19 @@ async def upload_file(file: UploadFile = File(...)):
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # return file_path
-    embed_docs = doc_loader(path=str(file_path))
-    response = embed_docs.create_embeddings()
-    if response['error_message'] is None:
-        return response
-    else:
-        raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail={
-            "status": "error",
-            "error_message": "Error while uploading the document. Looks like this is an error related to embedding the file."
-        }
-    )
+    return file_path
+    # embed_docs = doc_loader(path=str(file_path))
+    # response = embed_docs.create_embeddings()
+    # if response['error_message'] is None:
+    #     return response
+    # else:
+    #     raise HTTPException(
+    #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #     detail={
+    #         "status": "error",
+    #         "error_message": "Error while uploading the document. Looks like this is an error related to embedding the file."
+    #     }
+    # )
 
 if __name__ == "__main__":
 
