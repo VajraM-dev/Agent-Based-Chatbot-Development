@@ -11,6 +11,11 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 
 load_dotenv()
 
+LANGCHAIN_TRACING_V2=os.environ.get("LANGCHAIN_TRACING_V2")
+LANGCHAIN_ENDPOINT=os.environ.get("LANGCHAIN_ENDPOINT")
+LANGCHAIN_API_KEY=os.environ.get("LANGCHAIN_API_KEY")
+LANGCHAIN_PROJECT=os.environ.get("LANGCHAIN_PROJECT")
+
 MEMORY_KEY = os.environ.get("MEMORY_KEY")
 REDIS_URL = os.environ.get("REDIS_URL")
 
