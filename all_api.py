@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 import uvicorn
 from fastapi import FastAPI, HTTPException, status, Depends, UploadFile, File
 from fastapi.security import APIKeyHeader
@@ -10,8 +9,8 @@ from agent_chain import create_configurable, api_clear_history, get_response
 from embeddings.create_embeddings import doc_loader
 from pathlib import Path
 import shutil
-
-load_dotenv()
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(".env.dev"))
 # -----------------------API Development--------------------------------------------------------------
 
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
@@ -104,19 +103,19 @@ async def upload_file(file: UploadFile = File(...)):
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    return file_path
-    # embed_docs = doc_loader(path=str(file_path))
-    # response = embed_docs.create_embeddings()
-    # if response['error_message'] is None:
-    #     return response
-    # else:
-    #     raise HTTPException(
-    #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #     detail={
-    #         "status": "error",
-    #         "error_message": "Error while uploading the document. Looks like this is an error related to embedding the file."
-    #     }
-    # )
+    # return file_path
+    embed_docs = doc_loader(path=str(file_path))
+    response = embed_docs.create_embeddings()
+    if response['error_message'] is None:
+        return response
+    else:
+        raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail={
+            "status": "error",
+            "error_message": "Error while uploading the document. Looks like this is an error related to embedding the file."
+        }
+    )
 
 if __name__ == "__main__":
 

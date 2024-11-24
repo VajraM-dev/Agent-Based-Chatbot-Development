@@ -1,10 +1,10 @@
 import os
 from langchain_groq import ChatGroq
 from langchain_openai import OpenAIEmbeddings
-from dotenv import load_dotenv
 from langchain_aws import ChatBedrock
 from langchain_openai import ChatOpenAI
-load_dotenv()
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(".env.dev"))
 
 os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY")
 GROK_API_KEY = os.environ.get("GROK_API_KEY")

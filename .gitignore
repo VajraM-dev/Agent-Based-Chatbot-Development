@@ -1,5 +1,6 @@
-.env
+.env*
 venv
 helper_codes/
 __pycache__
 testing.py
+temp_env_files/

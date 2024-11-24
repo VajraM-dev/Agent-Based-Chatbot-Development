@@ -1,9 +1,6 @@
-# from chroma_connect import remote_db
-from embeddings.chroma_connect import remote_db, CHROMA_DB_COLLECTION
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.document_loaders import Docx2txtLoader
 import os
-from langchain_chroma import Chroma
 from config.llm import embedding_model
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore

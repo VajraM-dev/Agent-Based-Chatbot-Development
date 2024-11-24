@@ -1,8 +1,8 @@
 import streamlit as st
 import requests
 import os
-from dotenv import load_dotenv
-load_dotenv()
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(".env.dev"))
 # API base URL
 API_BASE_URL = os.environ.get("FAST_API_ENDPOINT")  # Change this to your FastAPI server URL if different
 API_KEY = os.environ.get("FAST_API_AUTH_KEY")  # Replace with your actual API key
