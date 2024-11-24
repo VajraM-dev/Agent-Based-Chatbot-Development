@@ -82,7 +82,7 @@ async def get_session_id() -> Dict:
 class clearSessionParamBody(BaseModel):
   config: Dict
 
-@app.post("/clear_session_history", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token)], summary="Clear session history", description="Clears all the session history to free up the redis server.")
+@app.post("/clear_session_history", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=5, seconds=60))], summary="Clear session history", description="Clears all the session history to free up the redis server.")
 async def clear_session_history(params: clearSessionParamBody) -> Dict:
     try:
         result = api_clear_history(params.config)
@@ -101,7 +101,7 @@ class chainParamBody(BaseModel):
   query: str
   config: Dict
 
-@app.post("/get_response", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token)], summary="Agent Calling", description="Main function to chat with agent.")
+@app.post("/get_response", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=100, seconds=60))], summary="Agent Calling", description="Main function to chat with agent.")
 async def api_get_response(params: chainParamBody) -> Dict:
     try:
         result = get_response(params.query, params.config)
@@ -120,7 +120,7 @@ async def api_get_response(params: chainParamBody) -> Dict:
 UPLOAD_DIR = Path(__file__).parent.resolve() / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)  # Ensure the directory exists
 
-@app.post("/upload/")
+@app.post("/upload/", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=20, seconds=60))], summary="Upload Documents", description="Used to upload PDF and Word files.")
 async def upload_file(file: UploadFile = File(...)):
     # Validate file type
     allowed_types = ["application/pdf", 
