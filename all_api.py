@@ -1,6 +1,7 @@
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException, status, Depends, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from typing import Dict
@@ -17,10 +18,22 @@ API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:8501",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 SECRET_TOKEN = os.environ["FAST_API_SECRET_TOKEN"] 
 
 async def authenticate_token(api_key: str = Depends(API_KEY_HEADER)):
-    # Replace this with your actual token validation logic
     valid_tokens = [SECRET_TOKEN]
     if api_key not in valid_tokens:
         raise HTTPException(
@@ -113,7 +126,8 @@ async def upload_file(file: UploadFile = File(...)):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail={
             "status": "error",
-            "error_message": "Error while uploading the document. Looks like this is an error related to embedding the file."
+            "error_message": "Error while uploading the document. Looks like this is an error related to embedding the file.",
+            "response_error_message": response['error_message']
         }
     )
 

@@ -71,3 +71,13 @@ def random_question():
     """
 
     return """The question you have asked in not related to the context I have. Please ask questions related to:  """
+
+@tool
+def content_moderation():
+    """
+    You are a content moderation tool embedded within a chatbot. 
+    Your task is to analyze user inputs to detect and handle inappropriate, harmful, or irrelevant content.
+
+    """
+
+    return "I cant get you the request information because: "

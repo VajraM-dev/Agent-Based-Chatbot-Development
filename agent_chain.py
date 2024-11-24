@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from agent_tools.bot_tools import retriever_tool, greeting_tool, contact_us, something_wrong, random_question
+from agent_tools.bot_tools import retriever_tool, greeting_tool, contact_us, something_wrong, random_question, content_moderation
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from config.llm import llm
 from langchain_community.chat_message_histories import RedisChatMessageHistory
@@ -24,6 +24,8 @@ prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """You are very powerful chatbot. Your job is to answer user questions based on the tools available to you. 
+            **Always use the retriever_tool first.** 
+            If people ask random questions which are not found it retriever_tool, then use the other tools to handle the conversation properly.
             """,
         ),
         MessagesPlaceholder(variable_name=MEMORY_KEY),
@@ -32,7 +34,7 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-tools = [retriever_tool, greeting_tool, contact_us, something_wrong, random_question]
+tools = [content_moderation, retriever_tool, greeting_tool, contact_us, something_wrong, random_question]
 
 agent = create_tool_calling_agent(llm, tools, prompt)
 

@@ -1,11 +1,12 @@
 import streamlit as st
 import requests
 import os
+import hashlib
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(".env.dev"))
 # API base URL
 API_BASE_URL = os.environ.get("FAST_API_ENDPOINT")  # Change this to your FastAPI server URL if different
-API_KEY = os.environ.get("FAST_API_AUTH_KEY")  # Replace with your actual API key
+API_KEY = os.environ.get("FAST_API_SECRET_TOKEN")  # Replace with your actual API key
 
 # Function to authenticate API calls
 def authenticated_api_call(endpoint, method="GET", data=None, files=None):
@@ -31,7 +32,7 @@ def authenticated_api_call(endpoint, method="GET", data=None, files=None):
         return None
 
 # Set up the Streamlit app
-st.title("Logistics Chatbot")
+st.title("QuestionPro Chatbot")
 
 # Initialize session state
 if "config" not in st.session_state:
@@ -72,28 +73,39 @@ if st.session_state.config:
             st.session_state.config = None
             st.session_state.messages = []
 
+def hash_file(file):
+    """Generate a unique hash for a file based on its contents."""
+    file.seek(0)
+    file_hash = hashlib.md5(file.read()).hexdigest()
+    file.seek(0)  # Reset file pointer after reading
+    return file_hash
+
 if st.session_state.config:
     st.sidebar.title("Upload a File")
 
-    # Ensure file upload status is tracked
-    if "file_uploaded" not in st.session_state:
-        st.session_state.file_uploaded = False
+    # Initialize session state variables if not present
+    if "uploaded_files" not in st.session_state:
+        st.session_state.uploaded_files = set()  # Set to store file hashes
 
     uploaded_file = st.sidebar.file_uploader("Upload your document (PDF or DOCX):", type=["pdf", "docx"])
 
-    # Handle file upload only if it hasn't been processed
-    if uploaded_file and not st.session_state.file_uploaded:
-        with st.spinner("Uploading file..."):
-            files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
-            upload_response = authenticated_api_call("/upload/", method="POST", files=files)
+    if uploaded_file:
+        file_hash = hash_file(uploaded_file)
 
-            if upload_response:
-                st.sidebar.success("File uploaded and processed successfully!")
-                st.session_state.file_uploaded = True  # Mark the file as uploaded
-                # Optionally store the response if needed
-                st.session_state.file_upload_response = upload_response
-            else:
-                st.sidebar.error("Failed to upload or process the file.")
+        # Only process if file hasn't been uploaded before
+        if file_hash not in st.session_state.uploaded_files:
+            with st.spinner("Uploading file..."):
+                files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
+                upload_response = authenticated_api_call("/upload/", method="POST", files=files)
+
+                if upload_response:
+                    st.sidebar.success("File uploaded and processed successfully!")
+                    st.session_state.uploaded_files.add(file_hash)  # Mark file as uploaded
+                    st.session_state.file_upload_response = upload_response
+                else:
+                    st.sidebar.error("Failed to upload or process the file.")
+        else:
+            st.sidebar.info("This file has already been uploaded.")
 
 # Display the chat history
 if st.session_state.config:

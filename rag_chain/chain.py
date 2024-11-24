@@ -9,6 +9,7 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 vector_store = PineconeVectorStore(index_name=index_name, embedding=embedding_model)
+print(index_name)
 
 # retriever = MultiQueryRetriever.from_llm(
 #     retriever=vector_store.as_retriever(search_kwargs={"k": 4}), llm=llm
