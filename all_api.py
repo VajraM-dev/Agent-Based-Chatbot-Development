@@ -10,13 +10,32 @@ from agent_chain import create_configurable, api_clear_history, get_response
 from embeddings.create_embeddings import doc_loader
 from pathlib import Path
 import shutil
+
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
+from redis import asyncio as aioredis
+from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(".env.dev"))
 # -----------------------API Development--------------------------------------------------------------
 
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize Redis connection
+    redis_connection = await aioredis.from_url(
+        os.environ["REDIS_URL"], encoding="utf-8", decode_responses=True
+    )
+    # Initialize FastAPILimiter
+    await FastAPILimiter.init(redis_connection)
+    try:
+        yield  # Application startup complete
+    finally:
+        await redis_connection.aclose()   # Cleanup during shutdown
+
+app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost",
@@ -45,7 +64,7 @@ async def authenticate_token(api_key: str = Depends(API_KEY_HEADER)):
 async def redirect_root_to_docs():
   return RedirectResponse("/docs")
 
-@app.get("/getSessionConfig", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token)], summary="Get Session Config Dictionary", description="Returns a config dictionary consisting of session id. Use full for sending to get response from agent.")
+@app.get("/getSessionConfig", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=20, seconds=60))], summary="Get Session Config Dictionary", description="Returns a config dictionary consisting of session id. Use full for sending to get response from agent.")
 async def get_session_id() -> Dict:
     try:
         return create_configurable()
@@ -64,7 +83,7 @@ class clearSessionParamBody(BaseModel):
   config: Dict
 
 @app.post("/clear_session_history", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token)], summary="Clear session history", description="Clears all the session history to free up the redis server.")
-def clear_session_history(params: clearSessionParamBody) -> Dict:
+async def clear_session_history(params: clearSessionParamBody) -> Dict:
     try:
         result = api_clear_history(params.config)
         return {"result": result}
@@ -83,7 +102,7 @@ class chainParamBody(BaseModel):
   config: Dict
 
 @app.post("/get_response", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token)], summary="Agent Calling", description="Main function to chat with agent.")
-def api_get_response(params: chainParamBody) -> Dict:
+async def api_get_response(params: chainParamBody) -> Dict:
     try:
         result = get_response(params.query, params.config)
         return {"result": result}
