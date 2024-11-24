@@ -73,6 +73,14 @@ if st.session_state.config:
             st.session_state.config = None
             st.session_state.messages = []
 
+if st.session_state.config:
+    if st.sidebar.button("Clear Vector Store"):
+        delete_vs_response = authenticated_api_call("/deleteVectorstoreRecords")
+        if delete_vs_response:
+            st.sidebar.success("Vector store cleared.")
+        else:
+            st.sidebar.success("Failed to clear vector store.")
+
 def hash_file(file):
     """Generate a unique hash for a file based on its contents."""
     file.seek(0)

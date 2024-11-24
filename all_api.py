@@ -10,6 +10,7 @@ from agent_chain import create_configurable, api_clear_history, get_response
 from embeddings.create_embeddings import doc_loader
 from pathlib import Path
 import shutil
+from delete_index_contents import clear_records_from_index
 
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
@@ -19,9 +20,10 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(".env.dev"))
 # -----------------------API Development--------------------------------------------------------------
-
+# set API Header
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
+# set rate limit
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize Redis connection
@@ -35,8 +37,10 @@ async def lifespan(app: FastAPI):
     finally:
         await redis_connection.aclose()   # Cleanup during shutdown
 
+# initiate FastAPI
 app = FastAPI(lifespan=lifespan)
 
+# limit the CORS
 origins = [
     "http://localhost",
     "http://localhost:8501",
@@ -52,6 +56,7 @@ app.add_middleware(
 
 SECRET_TOKEN = os.environ["FAST_API_SECRET_TOKEN"] 
 
+# Function to authenticate token
 async def authenticate_token(api_key: str = Depends(API_KEY_HEADER)):
     valid_tokens = [SECRET_TOKEN]
     if api_key not in valid_tokens:
@@ -64,6 +69,7 @@ async def authenticate_token(api_key: str = Depends(API_KEY_HEADER)):
 async def redirect_root_to_docs():
   return RedirectResponse("/docs")
 
+# API to create session config, needed for redis & langchain chathistory maintainence
 @app.get("/getSessionConfig", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=20, seconds=60))], summary="Get Session Config Dictionary", description="Returns a config dictionary consisting of session id. Use full for sending to get response from agent.")
 async def get_session_id() -> Dict:
     try:
@@ -77,8 +83,24 @@ async def get_session_id() -> Dict:
                 "error_message": "Error creating config for the session."
             }
         )
+    
+# API to create session config, needed for redis & langchain chathistory maintainence
+@app.get("/deleteVectorstoreRecords", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=20, seconds=60))], summary="Clear vector store", description="Clears all the records from vector store.")
+async def delete_vectorstore_records() -> Dict:
+    response = clear_records_from_index()
+    if response['error_message'] is None:
+        return response
+    else:
+        raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail={
+            "status": "error",
+            "error_message": "Error deleting records from vector store.",
+            "response_error_message": f"""{response['error']}"""
+        }
+    )
 
-
+# API to clear any chat history.
 class clearSessionParamBody(BaseModel):
   config: Dict
 
@@ -97,6 +119,7 @@ async def clear_session_history(params: clearSessionParamBody) -> Dict:
             }
         )
 
+# Main API to process the user query and answer it. 
 class chainParamBody(BaseModel):
   query: str
   config: Dict
@@ -116,6 +139,7 @@ async def api_get_response(params: chainParamBody) -> Dict:
             }
         )
 
+# API to upload documents
 # Define the directory to store files
 UPLOAD_DIR = Path(__file__).parent.resolve() / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)  # Ensure the directory exists
