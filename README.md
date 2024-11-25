@@ -12,7 +12,7 @@ A **context-aware chatbot** designed for efficient information retrieval from up
 4. [Usage](#usage)
 5. [Dependencies](#dependencies)
 6. [Notes and Future Work](#notes-and-future-work)
-7. [Screenshots](#screenshots)
+7. [Diagrams](#diagrams)
 
 ---
 
