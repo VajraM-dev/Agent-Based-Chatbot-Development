@@ -1,0 +1,3 @@
+This assumes redis is install locally
+docker build -t question-pro-bot .
+docker run -p 8012:8012 -p 8501:8501 -e REDIS_URL=redis://host.docker.internal:6379 question-pro-bot

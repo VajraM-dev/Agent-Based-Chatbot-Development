@@ -2,6 +2,17 @@ from agent_chain import get_response, api_clear_history
 from langchain import hub
 from config.llm import llm
 from langsmith import evaluate
+from langsmith import Client
+
+client = Client()
+
+def create_dataset(examples, dataset_name):
+    
+    dataset = client.create_dataset(dataset_name=dataset_name)
+    inputs, outputs = zip(
+        *[({"input": text}, {"output": result}) for text, result in examples]
+    )
+    client.create_examples(inputs=inputs, outputs=outputs, dataset_id=dataset.id)
 
 def predict_agent_answer(example: dict):
     """Use this for answer evaluation"""
@@ -35,20 +46,43 @@ def answer_evaluator(run, example) -> dict:
 
     return {"key": "answer_v_reference_score", "score": score}
 
-def run_eval(dataset_name, experiment_prefix, metadata):
-
+def run_eval(dataset_name, experiment_prefix):
+    metadata = "V1, questionpro-agent"
     experiment_results = evaluate(
         predict_agent_answer,
         data=dataset_name,
         evaluators=[answer_evaluator],
         experiment_prefix=experiment_prefix + "-response-v-reference",
-        num_repetitions=3,
+        num_repetitions=1,
         metadata={"version": metadata},
     )
+    resp = client.read_project(project_name=experiment_results.experiment_name, include_stats=True)
+    
+    return resp.json(indent=2)
 
-    return experiment_results
+def evaluate_agent(examples, dataset_name, experiment_prefix=None, only_create_dataset=False):
+    if only_create_dataset is False:
+        try:
+            create_dataset(examples, dataset_name)
+        except Exception as e:
+            return f"Error creating the dataset. Error: {e}"
 
+        try:
+            run_eval(dataset_name, experiment_prefix)
+            return "Evaluation complete"
+        except Exception as e:
+            return f"Error evaluating the agent. Error: {e}"
+    else:
+        try:
+            create_dataset(examples, dataset_name)
+        except Exception as e:
+            return f"Error creating the dataset. Error: {e}"
+
+examples = [
+        ("<sample_input>", "<sample_output>"),
+    ]
+
+dataset_name = "HelloDataset"
 experiment_prefix="eval1"
-metadata = "V1, questionpro-agent"
-dataset_name = "ds-false-manservant-64"
-print(run_eval(dataset_name, experiment_prefix, metadata))
+
+evaluate_agent(examples, dataset_name, experiment_prefix)
