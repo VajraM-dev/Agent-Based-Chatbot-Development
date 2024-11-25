@@ -119,7 +119,12 @@ All dependencies are listed in the `requirements.txt` file. Key dependencies inc
 ---
 
 ## **Diagrams**
+- UI Overview
 ![UI Overview](diagrams/UI.png)
-![Sample_LLMOps_pipeline](diagrams/Sample_LLMOps_pipeline.png)
+
+- Sample_LLMOps_pipeline
+![Sample LLMOps Pipeline](diagrams/Sample_LLMOps_pipeline.png)
+
+- Proposed AWS Architecture
 ![Proposed AWS Architecture](diagrams/Proposed_AWS_Architecture.png)
 ---
