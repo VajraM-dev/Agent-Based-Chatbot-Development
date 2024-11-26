@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # qp-ai-assessment
 
 A **context-aware chatbot** designed for efficient information retrieval from uploaded documents. Built with FastAPI, Streamlit, and Langchain, this project offers robust features, including error handling, content filtering, and authentication.
@@ -129,6 +128,4 @@ All dependencies are listed in the `requirements.txt` file. Key dependencies inc
 - Proposed AWS Architecture
 ![Proposed AWS Architecture](diagrams/Proposed_AWS_Architecture.png)
 ---
-=======
-# qp-ai-assessment
->>>>>>> 93387d4fde18933e710e4bf62a51adc65b0c1d50
+
