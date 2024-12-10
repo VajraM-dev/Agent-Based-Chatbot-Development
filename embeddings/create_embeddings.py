@@ -21,8 +21,9 @@ separators=[
     ]
 
 class doc_loader:
-    def __init__(self, path):
+    def __init__(self, path, metadata: dict = None):
         self.path = path
+        self.metadata = metadata
 
     def identify_file_type(self):
         extension = os.path.splitext(self.path)[1].lower()
@@ -32,6 +33,7 @@ class doc_loader:
             return "docx"
         else:
             return None
+        
 
     def load_pdf(self):
         loader = PyMuPDFLoader(self.path)
@@ -65,6 +67,14 @@ class doc_loader:
         except Exception as e:
             return {"message":"Error parsing and loading the documents.", "error_message": e}
         # print(data)
+        
+        try:
+            if self.metadata is not None:
+                for item in data:
+                    item.metadata.update(self.metadata)
+        except Exception as e:
+            print(f"Error adding metadata. Error: {e}")
+
         try:
             splits = self.create_splits(data)
         except Exception as e:
@@ -78,3 +88,7 @@ class doc_loader:
             return {"message":"Error uploading the documents to vectorstore.", "error_message": e}
         
    
+# path = r"C:\Users\Prathamesh\Downloads\HR-Copilot-KB\HR-Copilot-KB\EmployeeHandbook.pdf"
+# d = doc_loader(path)
+
+# print(d.load_pdf())

@@ -1,6 +1,6 @@
 import os
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Depends, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from embeddings.create_embeddings import doc_loader
 from pathlib import Path
 import shutil
 from delete_index_contents import clear_records_from_index
-
+import json
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from redis import asyncio as aioredis
@@ -144,8 +144,13 @@ async def api_get_response(params: chainParamBody) -> Dict:
 UPLOAD_DIR = Path(__file__).parent.resolve() / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)  # Ensure the directory exists
 
+class metadataParam(BaseModel):
+  metadata: Dict[str, str]
+
 @app.post("/upload/", status_code = status.HTTP_200_OK, dependencies=[Depends(authenticate_token), Depends(RateLimiter(times=20, seconds=60))], summary="Upload Documents", description="Used to upload PDF and Word files.")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(metadata: str = Form(...), file: UploadFile = File(...)):
+    metadata = json.loads(metadata)
+    print(type(metadata))
     # Validate file type
     allowed_types = ["application/pdf", 
                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
@@ -160,7 +165,7 @@ async def upload_file(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     # return file_path
-    embed_docs = doc_loader(path=str(file_path))
+    embed_docs = doc_loader(path=str(file_path), metadata=dict(metadata))
     response = embed_docs.create_embeddings()
     if response['error_message'] is None:
         return response
