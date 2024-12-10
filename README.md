@@ -1,4 +1,4 @@
-# qp-ai-assessment
+# Agent Based Chatbot Development
 
 A **context-aware chatbot** designed for efficient information retrieval from uploaded documents. Built with FastAPI, Streamlit, and Langchain, this project offers robust features, including error handling, content filtering, and authentication.
 
