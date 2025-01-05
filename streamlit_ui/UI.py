@@ -32,7 +32,7 @@ def authenticated_api_call(endpoint, method="GET", data=None, files=None):
         return None
 
 # Set up the Streamlit app
-st.title("QuestionPro Chatbot")
+st.title("Agentic Chatbot")
 
 # Initialize session state
 if "config" not in st.session_state:

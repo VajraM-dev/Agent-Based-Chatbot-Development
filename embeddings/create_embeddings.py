@@ -88,7 +88,7 @@ class doc_loader:
             return {"message":"Error uploading the documents to vectorstore.", "error_message": e}
         
    
-# path = r"C:\Users\Prathamesh\Downloads\HR-Copilot-KB\HR-Copilot-KB\EmployeeHandbook.pdf"
+# path = "<document path>"
 # d = doc_loader(path)
 
 # print(d.load_pdf())

@@ -70,11 +70,11 @@ A **context-aware chatbot** designed for efficient information retrieval from up
 1. Clone the repository and navigate to it.
 2. Build the Docker image:
    ```bash
-   docker build -t question-pro-bot .
+   docker build -t agent-bot .
    ```
 3. Run the Docker container:
    ```bash
-   docker run -p 8012:8012 -p 8501:8501 -e REDIS_URL=redis://host.docker.internal:6379 question-pro-bot
+   docker run -p 8012:8012 -p 8501:8501 -e REDIS_URL=redis://host.docker.internal:6379 agent-bot
    ```
 
 ---
@@ -116,16 +116,5 @@ All dependencies are listed in the `requirements.txt` file. Key dependencies inc
    - Utilizes `langchain-ai/rag-answer-vs-reference` metric for performance analysis.
    - Plans to enhance evaluation pipelines with more metrics and flexible configurations.
 
----
-
-## **Diagrams**
-- UI Overview
-![UI Overview](diagrams/UI.png)
-
-- Sample_LLMOps_pipeline
-![Sample LLMOps Pipeline](diagrams/Sample_LLMOps_pipeline.png)
-
-- Proposed AWS Architecture
-![Proposed AWS Architecture](diagrams/Proposed_AWS_Architecture.png)
 ---
 
