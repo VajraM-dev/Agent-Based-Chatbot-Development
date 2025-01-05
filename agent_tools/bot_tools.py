@@ -33,21 +33,14 @@ def greeting_tool():
 @tool
 def contact_us():
     """
-    When the user want to know the contact information or want to reach out QuestionPro. Use this tool
+    When the user want to know the contact information or want to reach out company name. Use this tool
     """
 
     phone_numbers = """
-    United States of America: +1 (800) 531 0228
-    Canada: +1 (647) 956-1242
-    United Kingdom: +44 20 3650 3166
-    Germany: +49 301 663 5782
-    Japan: +81 3-6691-1050
-    Australia: +61 2 8074 5080
-    UAE: +971 529 852 540
-    Fax: +1 (206) 260-3243
+    <phone numbers>
     """
 
-    url = "https://www.questionpro.com/in/?"
+    url = "<url>"
     contact_details = f"""
     You can reach out to us at the following website: {url},
     To contact us directly you can call the following: {phone_numbers}
